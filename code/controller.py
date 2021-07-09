@@ -12,6 +12,7 @@
 import os
 from model import paths, files, names, PROJECT_PATH
 
+import pandas as pd
 
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
@@ -25,6 +26,7 @@ from matplotlib import pyplot as plt
 
 from PIL import Image
 
+from geopy.geocoders import Nominatim
 
 
 #PUBLIC
@@ -33,9 +35,9 @@ def analyze_image(img):
     __save_uploadedfile(img)
     
     #Détecte les déchets
-    __detect_from_image(img.name, detection_model)
+    dic = __detect_from_image(img.name, detection_model)
     
-    return Image.open(files['OUT_IMG']) 
+    return {'img': Image.open(files['OUT_IMG']), 'data' : dic} 
     
 
 #PRIVATE
@@ -50,6 +52,7 @@ def __save_uploadedfile(uploadedfile, directory = paths['TAMPON_FOLDER_PATH']):
 def __detect_fn(image, detection_model):
     image, shapes = detection_model.preprocess(image)
     prediction_dict = detection_model.predict(image, shapes)
+    
     detections = detection_model.postprocess(prediction_dict, shapes)
     return detections
 
@@ -73,9 +76,11 @@ def __detect_from_image(img_name, detection_model):
     # detection_classes should be ints.
     detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
     
+
+    
     label_id_offset = 1
     image_np_with_detections = image_np.copy()
-    
+
     viz_utils.visualize_boxes_and_labels_on_image_array(
                 image_np_with_detections,
                 detections['detection_boxes'],
@@ -83,14 +88,16 @@ def __detect_from_image(img_name, detection_model):
                 detections['detection_scores'],
                 category_index,
                 use_normalized_coordinates=True,
-                max_boxes_to_draw=5,
-                min_score_thresh=.8,
+                max_boxes_to_draw=1,
+                min_score_thresh=.9,
                 agnostic_mode=False)
     
     cv2.imwrite(names['OUTPUT_IMG_FILE_NAME'], image_np_with_detections)
     plt.imshow(cv2.cvtColor(image_np_with_detections, cv2.COLOR_BGR2RGB))
     
     os.chdir(PROJECT_PATH)
+    
+    return __save_record(detections, category_index)
 
 def __get_last_ckpt():
     ckpt = [elt for elt in os.listdir(paths['CHECKPOINT_PATH']) if 'ckpt' in elt and 'index' in elt]
@@ -105,6 +112,30 @@ def __get_last_ckpt():
             last_record = list_ckpt[i]
 
     return last_record
+
+def __save_record(detections, category_index):
+    indexs = np.where(detections['detection_scores'] >= 0.9)[0]
+    dic = {}
+    for key in category_index.keys():
+        dic[category_index[key]['name']] = 0
+        
+    for i in indexs:
+        name = category_index[detections['detection_classes'][i] + 1]['name']
+        dic[name] += 1
+        
+    return dic
+
+def get_lat_long(loc, geolocator = Nominatim(user_agent="my_request")):
+    
+    #applying geocode method to get the location
+    location = geolocator.geocode(loc)
+    
+    dic = {}
+    dic['full_address'] = location.address
+    dic['lat'] = location.latitude
+    dic['long']= location.longitude
+
+    return dic
 
 
 # Load pipeline config and build a detection model

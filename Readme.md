@@ -4,10 +4,6 @@ la détection des déchets sur une image.
 
 Les catégories prisent en compte sont :
   - Metal
-  - Paper
-  - Plastique
-  - Cartboard
-  - Trash
 
 ## Installation du programme sur votre ordinateur
 
@@ -61,3 +57,24 @@ Veuillez vérifier sur internet si le nom du module lors de la commande pip inst
 <pre>streamlit run main.py</pre>
 
 Pour arrêter le programme fermer la fenêtre cmd
+
+## Utilisation
+
+### 1. Détecter les déchets sur une image
+  1. Cliquez sur "Détection" dans la navigation
+  2. Cliquez sur browse files pour sélectionner votre image
+  3. Référencer l'adresse où elle a été prise
+  4. Cliquez sur le bouton "Détecter les déchets"
+
+Note : Une fois le traitement terminer vous aurez l'image que vous avez fournis avec les déchets que notre programme a détecté. Sa position à été rajouté dans nos données. Vous pouvez voir la répartition des déchets dans la partie Cartographie
+
+### 2. Cartographie
+Vous pouvez au travers de cette partie voir la répartition des déchets que notre programme à pu enregistrer. Par défaut vous aurez la carte avec les différents points que nous avons enregistrer.
+
+  1. Cliquer sur Cartographie dans la navigation
+  2. Pour voir la heatmap cliquer sur le bouton "Afficher heatmap"
+
+### 3. Rapport
+Vous trouverez dans cette partie un aperçu des données de notre modèle que vous pouvez réutiliser pour des analyses
+
+  1. Cliquer sur Rapport dans la navigation
